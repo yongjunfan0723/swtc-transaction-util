@@ -1,6 +1,7 @@
 const BigNumber = require("bignumber.js");
 const program = require('commander');
 const fs = require("fs");
+const readlineSync = require("readline-sync");
 const JCCExchange = require("jcc_exchange").JCCExchange;
 const JingchangWallet = require("jcc_wallet").JingchangWallet;
 const config = require("./config");
@@ -38,8 +39,12 @@ const limitRandom = (min, max) => {
 }
 
 const deal = async () => {
-  const { address, password, base, counter, highAmount, lowAmount, highPrice, lowPrice, quantity, type } = program;
+  const { address, base, counter, highAmount, lowAmount, highPrice, lowPrice, quantity, type } = program;
+  let password = program.password;
   try {
+    if (!password) {
+      password = readlineSync.question("Please Enter Password:", { hideEchoBack: true });
+    }
     JCCExchange.init(config.nodes);
     const keystore = fs.readFileSync("./keystore/wallet.json", { encoding: "utf-8" });
     const instance = new JingchangWallet(JSON.parse(keystore), true, false);

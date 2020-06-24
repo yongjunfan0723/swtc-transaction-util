@@ -1,5 +1,6 @@
 const program = require('commander');
 const fs = require("fs");
+const readlineSync = require("readline-sync");
 const { JingchangWallet, jtWallet } = require("jcc_wallet");
 
 program
@@ -9,10 +10,16 @@ program
   .parse(process.argv);
 
 const generateKeystore = async () => {
-  const secret = program.secret;
-  const password = program.password;
+  let secret = program.secret;
+  let password = program.password;
   const keystoreFile = "./keystore/wallet.json";
   try {
+    if (!secret) {
+      secret = readlineSync.question("Please Enter Secret:", { hideEchoBack: true });
+    }
+    if (!password) {
+      password = readlineSync.question("Please Enter Password:", { hideEchoBack: true });
+    }
     let wallet;
     try {
       wallet = fs.readFileSync(keystoreFile, { encoding: "utf-8" });
