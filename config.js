@@ -1,8 +1,16 @@
-const nodes = [
-  "http://39.98.243.77:50333",
-  "http://39.104.188.146:50333",
-  "http://58.243.201.56:5050",
-  "http://47.74.51.71:50333"
-];
+const axios = require("axios");
 
-exports.nodes = nodes;
+const getRpcNodes = async () => {
+  const res = await axios.get("https://gateway.swtc.top/rpcservice", { timeout: 30000 });
+  if (res.status === 200 && res.data.count > 0) {
+    return res.data.rpcpeers;
+  } else {
+    return [
+      "https://srje115qd43qw2.swtc.top",
+      "https://srje071qdew231.swtc.top"
+    ]
+  }
+}
+
+exports.getRpcNodes = getRpcNodes;
+// module.exports = { getRpcNodes };

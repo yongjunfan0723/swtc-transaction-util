@@ -45,7 +45,8 @@ const deal = async () => {
     if (!password) {
       password = readlineSync.question("Please Enter Password:", { hideEchoBack: true });
     }
-    JCCExchange.init(config.nodes);
+    const nodes = await config.getRpcNodes();
+    JCCExchange.init(nodes);
     const keystore = fs.readFileSync("./keystore/wallet.json", { encoding: "utf-8" });
     const instance = new JingchangWallet(JSON.parse(keystore), true, false);
     const secret = await instance.getSecretWithAddress(password, address);

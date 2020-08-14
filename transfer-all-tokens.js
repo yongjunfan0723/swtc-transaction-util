@@ -72,7 +72,8 @@ const transferTokens = async () => {
   const keystore = fs.readFileSync("./keystore/wallet.json", { encoding: "utf-8" });
   const instance = new JingchangWallet(JSON.parse(keystore), true, false);
   const secret = await instance.getSecretWithAddress(password, address);
-  JCCExchange.init(config.nodes);
+  const nodes = await config.getRpcNodes();
+  JCCExchange.init(nodes);
 
   while (true) {
     try {

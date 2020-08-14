@@ -25,7 +25,8 @@ const setBrokerage = async () => {
     const keystore = fs.readFileSync("./keystore/wallet.json", { encoding: "utf-8" });
     const instance = new JingchangWallet(JSON.parse(keystore), true, false);
     const secret = await instance.getSecretWithAddress(password, address);
-    JCCExchange.init(config.nodes);
+    const nodes = await config.getRpcNodes();
+    JCCExchange.init(nodes);
     let hash = await JCCExchange.setBrokerage(address, secret, feeAccount, Number(rateNum), Number(rateDen), currency);
     console.log("设置挂单手续费成功: ", hash);
   } catch (error) {
