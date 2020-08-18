@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/GinMu/swtc-transaction-util#readme",
   "dependencies": {
+    "@swtc/utils": "^1.0.12",
+    "axios": "^0.19.2",
     "bignumber.js": "^9.0.0",
     "commander": "^3.0.2",
     "jcc_exchange": "^3.1.15",
