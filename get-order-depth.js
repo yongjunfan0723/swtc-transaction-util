@@ -24,6 +24,7 @@ const getDepth = async () => {
     };
     const res = await fetchDepth(options);
     console.log(`${base.toUpperCase()}-${counter.toUpperCase()} 深度: `, res);
+    // console.log(`${base.toUpperCase()}-${counter.toUpperCase()} 深度: `, JSON.stringify(res, '', 2));
   } catch (error) {
     console.log("通过节点获取深度失败:", error.message);
   }
