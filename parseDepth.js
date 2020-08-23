@@ -12,7 +12,7 @@ const parseOrderBook = (offers, isAsk = false) => {
   const orderbook = [];
   const len = offers.length;
   for (let i = 0; i < len; i++) {
-    const { TakerGets, taker_gets_funded, TakerPays, taker_pays_funded } = offers[i];
+    const { TakerGets, taker_gets_funded, TakerPays, taker_pays_funded, Platform } = offers[i];
     const takerGetsTotal = parseAmount(TakerGets);
     const takerGetsFunded = taker_gets_funded ? parseAmount(taker_gets_funded) : takerGetsTotal;
     const takerPaysTotal = parseAmount(TakerPays);
@@ -32,7 +32,7 @@ const parseOrderBook = (offers, isAsk = false) => {
       total = new BigNumber(takerPaysTotal.value).toString();
       type = "buy";
     }
-    orderbook.push({ price, amount, total, type });
+    orderbook.push({ price, amount, total, type, platform: Platform });
   }
   return orderbook;
 };
