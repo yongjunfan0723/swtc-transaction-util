@@ -12,7 +12,7 @@ const parseOrderBook = (offers, isAsk = false) => {
   const orderbook = [];
   const len = offers.length;
   for (let i = 0; i < len; i++) {
-    const { TakerGets, taker_gets_funded, TakerPays, taker_pays_funded, Platform } = offers[i];
+    const { Account, TakerGets, taker_gets_funded, TakerPays, taker_pays_funded, Platform } = offers[i];
     const takerGetsTotal = parseAmount(TakerGets);
     const takerGetsFunded = taker_gets_funded ? parseAmount(taker_gets_funded) : takerGetsTotal;
     const takerPaysTotal = parseAmount(TakerPays);
@@ -32,7 +32,7 @@ const parseOrderBook = (offers, isAsk = false) => {
       total = new BigNumber(takerPaysTotal.value).toString();
       type = "buy";
     }
-    orderbook.push({ price, amount, total, type, platform: Platform });
+    orderbook.push({ account: Account, price, amount, total, type, platform: Platform });
   }
   return orderbook;
 };
@@ -53,6 +53,8 @@ const mergePrice = (offers) => {
     }
     totalValue = totalValue.plus(offer.amount);
     res[key].total = totalValue.toString();
+    delete res[key].account;
+    delete res[key].platform;
   }
   return result;
 };
@@ -62,6 +64,8 @@ const parseDepth = (bids, asks) => {
   const parsedAsks = parseOrderBook(asks, true);
   parsedAsks.sort(sortAsks);
   parsedBids.sort(sortBids);
+  console.log("没根据价格合并前的卖单:", parsedAsks);
+  console.log("没根据价格合并前的买单:", parsedBids);
   return {
     asks: mergePrice(parsedAsks),
     bids: mergePrice(parsedBids)
