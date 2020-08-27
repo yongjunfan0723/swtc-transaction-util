@@ -66,6 +66,8 @@ const parseDepth = (bids, asks) => {
   parsedBids.sort(sortBids);
   console.log("没根据价格合并前的卖单:", parsedAsks);
   console.log("没根据价格合并前的买单:", parsedBids);
+  // console.log("没根据价格合并前的卖单:", JSON.stringify(parsedAsks, null, 2));
+  // console.log("没根据价格合并前的买单:", JSON.stringify(parsedBids, null, 2));
   return {
     asks: mergePrice(parsedAsks),
     bids: mergePrice(parsedBids)
