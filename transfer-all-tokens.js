@@ -105,25 +105,30 @@ const transferTokens = async () => {
           break;
         }
         let hasFailed = false;
+        let count = 0;
         for (const balance of filterBalances) {
           try {
             const available = new BigNumber(balance.value).minus(balance.freezed);
             const amount = available.precision(15, 1).toString(10);
             await transfer(address, secret, amount, to, balance.currency);
             console.log("转账成功:", balance.currency);
+            count++;
           } catch (error) {
             console.log(`${balance.currency}转账失败: `, error);
             hasFailed = true;
           }
         }
-        try {
-          const available = new BigNumber(swtBalance.value).minus(swtBalance.freezed).minus(gas);
-          const amount = available.precision(15, 1).toString(10);
-          await transfer(address, secret, amount, to, "swt");
-          console.log("转账成功:", swtBalance.currency);
-        } catch (error) {
-          console.log(`${swtBalance.currency}转账失败: `, error);
-          hasFailed = true;
+        if (filterBalances.length === count) {
+          try {
+            const available = new BigNumber(swtBalance.value).minus(swtBalance.freezed).minus(gas);
+            const amount = available.precision(15, 1).toString(10);
+            await transfer(address, secret, amount, to, "swt");
+            console.log("转账成功:", swtBalance.currency);
+          } catch (error) {
+            console.log(`${swtBalance.currency}转账失败: `, error);
+            hasFailed = true;
+            break;
+          }
         }
         if (!hasFailed) {
           // 如果没有失败case, 跳出循环
