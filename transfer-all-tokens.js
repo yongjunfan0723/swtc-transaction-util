@@ -118,6 +118,9 @@ const transferTokens = async () => {
             hasFailed = true;
           }
         }
+        if (count === 0) {
+          break;
+        }
         if (filterBalances.length === count) {
           try {
             const available = new BigNumber(swtBalance.value).minus(swtBalance.freezed).minus(gas);
