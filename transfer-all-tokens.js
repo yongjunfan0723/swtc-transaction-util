@@ -93,6 +93,7 @@ const transferTokens = async () => {
             break;
           } catch (error) {
             console.log("只有SWT时, SWT转账失败: ", error);
+            break;
           }
         } else {
           // 小于则跳出循环
