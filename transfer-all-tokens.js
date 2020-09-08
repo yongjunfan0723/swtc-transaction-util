@@ -35,8 +35,7 @@ const objectConvertToArr = (data) => {
     if (isZero) {
       continue;
     }
-    let currency = key;
-    currency = currency.split("_")[0];
+    let [currency] = key.split("_");
     if (currency.toLowerCase() === "swtc") {
       currency = "SWT";
     }
@@ -87,7 +86,9 @@ const transferTokens = async () => {
         const available = new BigNumber(swtBalance.value).minus(swtBalance.freezed)
         if (available.gt(miniGasLimit)) {
           try {
-            const amount = available.minus(miniGasLimit).precision(15, 1).toString(10);
+            // 以前因为jcc_jingtum_lib里BigNumber的问题，转账数量需要保留(控制)15位有效数字的精度  .precision(15, 1)
+            // 具体错误: BigNumber Error: new BigNumber() number type has more than 15 significant digits: 1.000999999999988 (Amount)
+            const amount = available.minus(miniGasLimit).toString(10);
             await transfer(address, secret, amount, to, "swt");
             console.log("转账成功:", swtBalance.currency);
             break;
@@ -110,7 +111,7 @@ const transferTokens = async () => {
         for (const balance of filterBalances) {
           try {
             const available = new BigNumber(balance.value).minus(balance.freezed);
-            const amount = available.precision(15, 1).toString(10);
+            const amount = available.toString(10);
             await transfer(address, secret, amount, to, balance.currency);
             console.log("转账成功:", balance.currency);
             count++;
@@ -125,7 +126,7 @@ const transferTokens = async () => {
         if (filterBalances.length === count) {
           try {
             const available = new BigNumber(swtBalance.value).minus(swtBalance.freezed).minus(gas);
-            const amount = available.precision(15, 1).toString(10);
+            const amount = available.toString(10);
             await transfer(address, secret, amount, to, "swt");
             console.log("转账成功:", swtBalance.currency);
           } catch (error) {
