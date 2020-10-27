@@ -14,3 +14,10 @@ const getRpcNodes = async () => {
 
 exports.getRpcNodes = getRpcNodes;
 // module.exports = { getRpcNodes };
+
+// const rpcNodes = [
+//   "https://srje115qd43qw2.swtc.top",
+//   "https://srje071qdew231.swtc.top"
+// ];
+
+// exports.rpcNodes = rpcNodes;

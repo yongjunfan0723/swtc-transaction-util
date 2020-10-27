@@ -27,6 +27,7 @@ const transfer = async () => {
     const instance = new JingchangWallet(JSON.parse(keystore), true, false);
     const secret = await instance.getSecretWithAddress(password, address);
     const nodes = await config.getRpcNodes();
+    // const nodes = config.rpcNodes;
     JCCExchange.init(nodes);
     let hash = await JCCExchange.transfer(address, secret, amount, memo, to, currency);
     console.log("转账成功: ", hash);

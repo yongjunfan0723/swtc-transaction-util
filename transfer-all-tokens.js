@@ -72,6 +72,7 @@ const transferTokens = async () => {
   const instance = new JingchangWallet(JSON.parse(keystore), true, false);
   const secret = await instance.getSecretWithAddress(password, address);
   const nodes = await config.getRpcNodes();
+  // const nodes = config.rpcNodes;
   JCCExchange.init(nodes);
 
   while (true) {

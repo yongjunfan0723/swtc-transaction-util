@@ -14,6 +14,7 @@ const getDepth = async () => {
   const { counter, base, limit } = program;
   try {
     const nodes = await config.getRpcNodes();
+    // const nodes = config.rpcNodes;
     const rpcNode = nodes[Math.floor(Math.random() * nodes.length)];
     console.log("current rpcNode:", rpcNode);
     const options = {

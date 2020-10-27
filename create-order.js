@@ -29,6 +29,7 @@ const deal = async () => {
     const secret = await instance.getSecretWithAddress(password, address);
     const sum = new BigNumber(price).multipliedBy(amount).toString(10);
     const nodes = await config.getRpcNodes();
+    // const nodes = config.rpcNodes;
     JCCExchange.init(nodes);
     const hash = await JCCExchange.createOrder(address, secret, amount, base, counter, sum, type, address);
     console.log("挂单成功:", hash);

@@ -26,6 +26,7 @@ const setBrokerage = async () => {
     const instance = new JingchangWallet(JSON.parse(keystore), true, false);
     const secret = await instance.getSecretWithAddress(password, address);
     const nodes = await config.getRpcNodes();
+    // const nodes = config.rpcNodes;
     JCCExchange.init(nodes);
     let hash = await JCCExchange.setBrokerage(address, secret, feeAccount, Number(rateNum), Number(rateDen), currency);
     console.log("设置挂单手续费成功: ", hash);
