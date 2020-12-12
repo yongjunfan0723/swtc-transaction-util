@@ -60,8 +60,8 @@ const mergePrice = (offers) => {
 };
 
 const parseDepth = (bids, asks) => {
-  const parsedBids = parseOrderBook(bids);
-  const parsedAsks = parseOrderBook(asks, true);
+  const parsedBids = Array.isArray(bids) ? parseOrderBook(bids) : [];
+  const parsedAsks = Array.isArray(asks) ? parseOrderBook(asks, true) : [];
   parsedAsks.sort(sortAsks);
   parsedBids.sort(sortBids);
   console.log("没根据价格合并前的卖单:", parsedAsks);
