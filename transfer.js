@@ -23,13 +23,23 @@ const transfer = async () => {
     if (!password) {
       password = readlineSync.question("Please Enter Password:", { hideEchoBack: true });
     }
+    const memoData = {
+      base: { name: "SWT", amount: "2" },
+      counter: { name: "JJCC", amount: "1" },
+      cycle: "1609313400",
+      startTime: "1606708800",
+      endTime: "1606721400",
+      status: "0",
+      wallet: "jaPYwB4HrowGvyFtHEzHzDMtngVWm6NRw6",
+      perAmount: 6
+      };
     const keystore = fs.readFileSync("./keystore/wallet.json", { encoding: "utf-8" });
     const instance = new JingchangWallet(JSON.parse(keystore), true, false);
     const secret = await instance.getSecretWithAddress(password, address);
-    const nodes = await config.getRpcNodes();
-    // const nodes = config.rpcNodes;
+    // const nodes = await config.getRpcNodes();
+    const nodes = config.rpcNodes;
     JCCExchange.init(nodes);
-    let hash = await JCCExchange.transfer(address, secret, amount, memo, to, currency);
+    let hash = await JCCExchange.transfer(address, secret, amount, JSON.stringify(memoData), to, currency);
     console.log("转账成功: ", hash);
   } catch (error) {
     console.log("转账失败: ", error.message);
