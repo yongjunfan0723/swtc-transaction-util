@@ -59,13 +59,17 @@ const mergePrice = (offers) => {
   return result;
 };
 
-const parseDepth = (bids, asks) => {
-  const parsedBids = Array.isArray(bids) ? parseOrderBook(bids) : [];
-  const parsedAsks = Array.isArray(asks) ? parseOrderBook(asks, true) : [];
+const parseDepth = (bids, asks, address) => {
+  let parsedBids = Array.isArray(bids) ? parseOrderBook(bids) : [];
+  let parsedAsks = Array.isArray(asks) ? parseOrderBook(asks, true) : [];
   parsedAsks.sort(sortAsks);
   parsedBids.sort(sortBids);
-  console.log("没根据价格合并前的卖单:", parsedAsks);
-  console.log("没根据价格合并前的买单:", parsedBids);
+  if (address) {
+    parsedAsks = parsedAsks.filter(ask => ask.account === address);
+    parsedBids = parsedBids.filter(bid => bid.account === address);
+  }
+  console.log("没根据价格合并前的卖单:", parsedAsks.length);
+  console.log("没根据价格合并前的买单:", parsedBids.length);
   // console.log("没根据价格合并前的卖单:", JSON.stringify(parsedAsks, null, 2));
   // console.log("没根据价格合并前的买单:", JSON.stringify(parsedBids, null, 2));
   return {

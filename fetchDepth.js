@@ -28,6 +28,7 @@ const bookOffers = async (options) => {
 };
 
 const fetchDepth = async (options) => {
+  const wallet = options.wallet;
   const orders = await Promise.all([
     bookOffers({
       url: options.url,
@@ -38,7 +39,7 @@ const fetchDepth = async (options) => {
     bookOffers(options)
   ]);
   const offers = orders.map((order) => order.result.offers);
-  const depth = parseDepth(offers[0], offers[1]);
+  const depth = parseDepth(offers[0], offers[1], wallet);
   return depth;
 };
 
