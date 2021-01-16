@@ -54,7 +54,7 @@ const transfer = async () => {
     for(let item of parseData) {
         let txData = {
           to: item["地址"],
-          token: item["币种"],
+          token: item["币种"].toUpperCase(),
           amount: item["数量"],
           memo: item["转账备注"],
           status: 0,
@@ -122,7 +122,7 @@ const transfer = async () => {
       return;
     }
     const gasFee = new BigNumber(transferList.length).times(0.00001);
-    if(new BigNumber(balance["swt"].available).lt(gasFee)) {
+    if(new BigNumber(balance["SWT"].available).lt(gasFee)) {
       console.log("gas费不足");
       return;
     }
