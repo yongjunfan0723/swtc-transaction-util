@@ -14,10 +14,15 @@
 
 // exports.getRpcNodes = getRpcNodes;
 // module.exports = { getRpcNodes };
-
-const rpcNodes = [
-  "https://srje115qd43qw2.swtc.top",
-  "https://srje071qdew231.swtc.top"
-];
-
-exports.rpcNodes = rpcNodes;
+module.exports = {
+  rpcNodes: [
+    "https://srje115qd43qw2.swtc.top",
+    "https://srje071qdew231.swtc.top"
+  ],
+  explorerNodes: [
+    "https://expji39bdbdba1e1.swtc.top",
+    "https://expjma3a3da190b6.swtc.top",
+    "https://expjseb8c3bb5538.swtc.top",
+    "https://expjsla2978b8ed4.swtc.top"
+  ]
+}
