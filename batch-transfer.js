@@ -11,9 +11,7 @@ const JingchangWallet = require("jcc_wallet").JingchangWallet;
 const jtWallet = require("jcc_wallet").jtWallet;
 const Tx = require("jcc_exchange").Tx;
 const isValidCurrency = require("@swtc/common").isValidCurrency;
-const { utils } = require("@swtc/utils");
 const config = require("./config");
-const parseAmount = utils.parseAmount;
 
 program
   .usage('[options] <file ...>')
@@ -148,7 +146,16 @@ const transfer = async () => {
           hash = await JCCExchange.sendRawTransaction(item.blob);
           hashList.push(hash);
         } catch (error) {
-          console.log(`这条to: ${item.tx.Destination}, token: ${parseAmount(item.tx.Amount).currency} , amount: ${parseAmount(item.tx.Amount).value} 失败: ${error.message}`);
+          let errorAmount, errorCurrency;
+          const Amount = item.tx.Amount;
+          if(typeof Amount === "string") {
+              errorAmount = Amount;
+              errorCurrency = "SWT";
+          } else {
+              errorAmount = Amount.value;
+              errorCurrency = Amount.currency;
+          }
+          console.log(`这条to: ${item.tx.Destination}, token: ${errorCurrency} , amount: ${errorAmount} 失败: ${error.message}`);
         }
       }
     }
