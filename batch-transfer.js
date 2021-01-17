@@ -104,8 +104,8 @@ const transfer = async () => {
       }
       const tx = Tx.serializePayment( 
         address,
-        list[i].amount,
-        list[i].to,
+        new BigNumber(list[i].amount).toString(10),
+        list[i].to.trim(),
         list[i].token,
         isObject(list[i].memo) ? JSON.stringify(list[i].memo) : list[i].memo);
         const copyTx = Object.assign({}, tx);
