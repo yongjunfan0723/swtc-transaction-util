@@ -36,6 +36,10 @@ const transfer = async () => {
   const { address } = program;
   let password = program.password;
   try {
+    if(!jtWallet.isValidAddress(address.trim())) {
+      console.log(`${address} 不合法`);
+      return;
+    }
     if (!password) {
       password = readlineSync.question("Please Enter Password:", { hideEchoBack: true });
     }
