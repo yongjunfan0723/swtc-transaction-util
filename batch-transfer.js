@@ -154,9 +154,15 @@ const transfer = async () => {
       }
     }
     const hashList = [];
+    const failSendList = [];
     for(let item of signList) {
+      let retry = 0;
       let hash;
       while(!hash) {
+        if (retry === 3) {
+          failSendList.push(item);
+          break;
+        }
         try {
           hash = await JCCExchange.sendRawTransaction(item.blob);
           hashList.push(hash);
@@ -170,20 +176,35 @@ const transfer = async () => {
               errorAmount = Amount.value;
               errorCurrency = Amount.currency;
           }
-          console.log(`这条to: ${item.tx.Destination}, token: ${errorCurrency} , amount: ${errorAmount} 失败: ${error.message}`);
+          if(error.message !== "Missing/inapplicable prior transaction." && error.message !== "This sequence number has already past.") {
+            console.log("不是因为Sequence导致的失败");
+            console.log(`这条to: ${item.tx.Destination}, token: ${errorCurrency} , amount: ${errorAmount}, sequence: ${item.tx.Sequence}  失败: ${error.message}`);
+            failSendList.push(item);
+            break;
+          }
+          console.log(`这条to: ${item.tx.Destination}, token: ${errorCurrency} , amount: ${errorAmount}, sequence: ${item.tx.Sequence}  失败: ${error.message}`);
+          retry = retry + 1;
         }
       }
     }
+    console.log("转账失败的数组:", failSendList, "失败多少条:", failSendList.length);
     console.log("转账hash数组:", hashList);
+    if(hashList.length === 0) {
+      console.log("转账全部失败,请重新转账!");
+      return;
+    }
+    if(transferList.length === hashList.length) {
+      console.log("转账全部完成");
+    }
     for(let hash of hashList) {
       while(true) {
         const res = await explorerInst.orderDetail(Date.now(), hash);
         if(res.result && res.data.succ === "tesSUCCESS") {
           break;
         }
-      }
-      }
-   console.log("转账全部成功");
+       }
+     }
+   console.log("校验转账成功!");
   } catch (error) {
     console.log("error:", error.message);
   }
