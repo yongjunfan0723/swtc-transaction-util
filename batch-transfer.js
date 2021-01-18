@@ -64,18 +64,29 @@ const transfer = async () => {
           status: 0,
         };
         if (jtWallet.isValidAddress(txData.to.trim()) && !new BigNumber(txData.amount).isNaN() && isValidCurrency(txData.token)) {
-        list.push(txData);
-        tokens.push(txData.token);
+          if(txData.to.trim() === address) {
+            console.log(`转入地址: ${txData.to.trim()} 和 转出地址: ${address} 是同一地址`);
+            continue;
+          }
+          const toBalance = await explorerInst.getBalances(txData.to.trim(), txData.to.trim());
+           if(toBalance.code === "2004") {
+             console.log(`${txData.to.trim()} 未激活`);
+             continue;
+           }
+           if(toBalance.result) {
+            list.push(txData);
+            tokens.push(txData.token);
+           }
       }
     }
-    if(list.length === 0) {
+  if(list.length === 0) {
       return;
-    }
+  }
   const balanceRes = await explorerInst.getBalances(address, address);
   if (!balanceRes.result) {
-    console.log("获取资产失败:", balanceRes.msg);
+    console.log("获取转出地址资产失败:", balanceRes.msg);
     if(balanceRes.code === "2004") {
-      console.log(`${address} 未激活`);
+      console.log(`转出地址${address} 未激活`);
     }
     return;
   }
