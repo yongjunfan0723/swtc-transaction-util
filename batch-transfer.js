@@ -61,7 +61,7 @@ const transfer = async () => {
           token: item["币种"].toUpperCase(),
           amount: item["数量"],
           memo: item["转账备注"],
-          status: 0,
+          // status: 0,
         };
         if (jtWallet.isValidAddress(txData.to.trim()) && !new BigNumber(txData.amount).isNaN() && isValidCurrency(txData.token)) {
           if(txData.to.trim() === address) {
@@ -132,7 +132,8 @@ const transfer = async () => {
         }
         transferList.push(copyTx);
     }
-    console.log("组装成的TX数组:", transferList)
+    console.log("组装成的TX数组:", transferList);
+    console.log("要发送多少笔TX", transferList.length);
     if(transferList.length === 0){
       return;
     }
@@ -188,6 +189,20 @@ const transfer = async () => {
       }
     }
     console.log("转账失败的数组:", failSendList, "失败多少条:", failSendList.length);
+    if(failSendList.length > 0) {
+      const filterArr = failSendList.map(item => {
+        return {
+          地址: item.tx.Destination,
+          币种: typeof item.tx.Amount === "string" ? "SWT" : item.tx.Amount.currency,
+          数量: typeof item.tx.Amount === "string" ?  item.tx.Amount : item.tx.Amount.value,
+          转账备注: item.tx.Memos[0].Memo.MemoData ? item.tx.Memos[0].Memo.MemoData : ""
+        }
+        });
+        const sheet = XLSX.utils.json_to_sheet(filterArr);
+        const newWorkBook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(newWorkBook, sheet, "sheet1");
+        XLSX.writeFile(newWorkBook, "testTransfer.xlsx");
+    }
     console.log("转账hash数组:", hashList);
     if(hashList.length === 0) {
       console.log("转账全部失败,请重新转账!");
