@@ -57,23 +57,24 @@ const transfer = async () => {
     const parseData = XLSX.utils.sheet_to_json(worksheet);
     for(let item of parseData) {
         let txData = {
-          to: item["地址"],
-          token: item["币种"].toUpperCase(),
-          amount: item["数量"],
-          memo: item["转账备注"],
+          to: item["地址"]? item["地址"].trim() : "",
+          token: item["币种"]? item["币种"].trim().toUpperCase() : "",
+          amount: item["数量"] || "",
+          memo: item["转账备注"] || "",
           // status: 0,
         };
-        if (jtWallet.isValidAddress(txData.to.trim()) && !new BigNumber(txData.amount).isNaN() && isValidCurrency(txData.token)) {
-          if(txData.to.trim() === address) {
-            console.log(`转入地址: ${txData.to.trim()} 和 转出地址: ${address} 是同一地址`);
+        if (jtWallet.isValidAddress(txData.to) && !new BigNumber(txData.amount).isNaN() && new BigNumber(txData.amount).gt(0) && isValidCurrency(txData.token)) {
+          if(txData.to === address) {
+            console.log(`转入地址: ${txData.to} 和 转出地址: ${address} 是同一地址`);
             continue;
           }
-          const toBalance = await explorerInst.getBalances(txData.to.trim(), txData.to.trim());
+          const toBalance = await explorerInst.getBalances(txData.to, txData.to);
            if(toBalance.code === "2004") {
-             console.log(`${txData.to.trim()} 未激活`);
+             console.log(`${txData.to} 未激活`);
              continue;
            }
            if(toBalance.result) {
+            txData.amount = new BigNumber(txData.amount).toString(10);
             list.push(txData);
             tokens.push(txData.token);
            }
@@ -82,6 +83,7 @@ const transfer = async () => {
   if(list.length === 0) {
       return;
   }
+  console.log("从xlsx文件里解析出来的数据:", list);
   const balanceRes = await explorerInst.getBalances(address, address);
   if (!balanceRes.result) {
     console.log("获取转出地址资产失败:", balanceRes.msg);
@@ -119,8 +121,8 @@ const transfer = async () => {
       }
       const tx = Tx.serializePayment( 
         address,
-        new BigNumber(list[i].amount).toString(10),
-        list[i].to.trim(),
+        list[i].amount,
+        list[i].to,
         list[i].token,
         isObject(list[i].memo) ? JSON.stringify(list[i].memo) : list[i].memo);
         const copyTx = Object.assign({}, tx);
@@ -133,7 +135,7 @@ const transfer = async () => {
         transferList.push(copyTx);
     }
     console.log("组装成的TX数组:", transferList);
-    console.log("要发送多少笔TX", transferList.length);
+    console.log("要发送多少笔TX:", transferList.length);
     if(transferList.length === 0){
       return;
     }
