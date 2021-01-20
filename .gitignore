@@ -62,4 +62,4 @@ typings/
 keystore
 shell.md
 .vscode
-testTransfer.xlsx
+.batch_test

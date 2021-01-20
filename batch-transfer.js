@@ -2,6 +2,7 @@ const sign = require("jcc_exchange").sign;
 const BigNumber = require("bignumber.js");
 const program = require('commander');
 const fs = require("fs");
+const path = require("path");
 const XLSX = require("xlsx");
 const readlineSync = require("readline-sync");
 const JCCExchange = require("jcc_exchange").JCCExchange;
@@ -17,6 +18,7 @@ program
   .usage('[options] <file ...>')
   .option('-A, --address <path>', "钱包地址")
   .option('-P, --password <path>', "keystore密码")
+  .option('-t, --type <path>', "文件类型")
   // .option('-c, --currency <path>', "token名称")
   // .option('-a, --amount <path>', "数量")
   // .option('-t, --to <path>', "转入钱包地址")
@@ -32,8 +34,43 @@ const isObject = (obj) => {
   return Object.prototype.toString.call(obj) === "[object Object]";
 };
 
+const parseCsv = () => {
+  return new Promise((resolve, reject) => {
+    try {
+      const  filePath = path.join(__dirname, './batch_test/test.csv');
+      // Read CSV
+      let readFile = fs.readFileSync(filePath, { encoding: 'utf-8' }, (err) => {
+        console.log("read csv file error:", err.message);
+        reject(error);
+      });
+      
+      // Split on row
+      readFile = readFile.split("\n");
+      
+      // Get first row for column headers
+      const headers = readFile.shift().split(",");
+      
+      const json = [];    
+      readFile.forEach((item) =>{
+          // Loop through each row
+          let tmp = {}
+          let row = item.split(",")
+          for(let i = 0; i < headers.length; i++) {
+              tmp[headers[i]] = row[i];
+          }
+          // Add object to list
+          json.push(tmp);
+      });
+      resolve(json);
+    } catch(err) {
+      console.log("解析csv文件过程中发生的错误:", err);
+      reject(error);
+    }
+});
+}
+
 const transfer = async () => {
-  const { address } = program;
+  const { address, type } = program;
   let password = program.password;
   try {
     if(!jtWallet.isValidAddress(address.trim())) {
@@ -46,15 +83,25 @@ const transfer = async () => {
     const explorerInst = ExplorerFactory.init(config.explorerNodes);
     const list = [];
     const tokens = [];
-    const isexist = fs.existsSync("./testTransfer.xlsx");
-    if(!isexist) {
-      console.log("请导入xlsx文件!");
-      return;
+    let parseData;
+    if(type === "0") {
+      const isexistExcel = fs.existsSync("./batch_test/testTransfer.xlsx");
+      if(!isexistExcel) {
+        console.log("请导入xlsx文件!");
+        return;
+      }
+      const file = fs.readFileSync("./batch_test/testTransfer.xlsx", { encoding: "binary" });
+      const workBook = XLSX.read(file, { type: "binary" });
+      const worksheet = workBook.Sheets[workBook.SheetNames[0]];
+      parseData = XLSX.utils.sheet_to_json(worksheet);
+    } else {
+      const isexistCsv = fs.existsSync("./batch_test/test.csv");
+       if(!isexistCsv) {
+         console.log("请导入csv文件!");
+         return;
+       }
+       parseData = await parseCsv();
     }
-    const file = fs.readFileSync("./testTransfer.xlsx", { encoding: "binary" });
-    const workBook = XLSX.read(file, { type: "binary" });
-    const worksheet = workBook.Sheets[workBook.SheetNames[0]];
-    const parseData = XLSX.utils.sheet_to_json(worksheet);
     for(let item of parseData) {
         let txData = {
           to: item["地址"]? item["地址"].trim() : "",
@@ -83,7 +130,7 @@ const transfer = async () => {
   if(list.length === 0) {
       return;
   }
-  console.log("从xlsx文件里解析出来的数据:", list);
+  console.log("解析出来的合法数据:", list);
   const balanceRes = await explorerInst.getBalances(address, address);
   if (!balanceRes.result) {
     console.log("获取转出地址资产失败:", balanceRes.msg);
