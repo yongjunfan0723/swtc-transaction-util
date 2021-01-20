@@ -34,6 +34,13 @@ const isObject = (obj) => {
   return Object.prototype.toString.call(obj) === "[object Object]";
 };
 
+const isEmptyObject = (obj) => {
+  if (JSON.stringify(obj) === "{}") {
+    return true
+  }
+  return false
+}
+
 const parseCsv = () => {
   return new Promise((resolve, reject) => {
     try {
@@ -53,13 +60,18 @@ const parseCsv = () => {
       const json = [];    
       readFile.forEach((item) =>{
           // Loop through each row
-          let tmp = {}
-          let row = item.split(",")
+          let tmp = {};
+          let row = item.split(",");
           for(let i = 0; i < headers.length; i++) {
-              tmp[headers[i]] = row[i];
+            if(!/^[\u4e00-\u9fa5]+$/i.test(headers[i])) {
+              break;
+              }
+             tmp[headers[i]] = row[i];
           }
           // Add object to list
-          json.push(tmp);
+          if(!isEmptyObject(tmp)) {
+            json.push(tmp);
+          }
       });
       resolve(json);
     } catch(err) {
@@ -101,6 +113,10 @@ const transfer = async () => {
          return;
        }
        parseData = await parseCsv();
+    }
+    if(parseData.length === 0) {
+      console.log("解析出来的数据有误,请检查后重试!");
+      return;
     }
     for(let item of parseData) {
         let txData = {
