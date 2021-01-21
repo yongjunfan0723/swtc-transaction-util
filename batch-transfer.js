@@ -57,28 +57,54 @@ const parseCsv = () => {
       // Get first row for column headers
       const headers = readFile.shift().split(",");
       
-      const json = [];    
-      readFile.forEach((item) =>{
-          // Loop through each row
-          let tmp = {};
-          let row = item.split(",");
-          for(let i = 0; i < headers.length; i++) {
-            if(!/^[\u4e00-\u9fa5]+$/i.test(headers[i])) {
-              break;
-              }
-             tmp[headers[i]] = row[i];
-          }
-          // Add object to list
-          if(!isEmptyObject(tmp)) {
-            json.push(tmp);
-          }
-      });
+      const json = [];
+      let k = 0;
+      for(; k < readFile.length; k++) {
+        const item = readFile[k];
+         // Loop through each row
+         let tmp = {};
+         let row = item.split(",");
+         for(let i = 0; i < headers.length; i++) {
+           if(!/^[\u4e00-\u9fa5]+$/i.test(headers[i])) {
+             break;
+             }
+            tmp[headers[i]] = row[i];
+         }
+         // Add object to list
+         if(!isEmptyObject(tmp)) {
+           json.push(tmp);
+         }
+      }
       resolve(json);
     } catch(err) {
       console.log("解析csv文件过程中发生的错误:", err);
       reject(error);
     }
 });
+}
+
+const judgeDupAmount = (list) => {
+  const originToList = list;
+  const noDupArr = [...new Set(originToList)];
+  let dupArray = [];
+  console.log("origin toList Length:", originToList.length);
+  console.log("noDupArr Length:", noDupArr.length);
+  let count = 0;
+  let obj = {}; //最终返回的数据
+  noDupArr.forEach(i => {
+    count = 0;
+    originToList.forEach(j => {
+        if(i===j) count++;
+    })
+    obj[i] = count;
+    })
+   for(let i in obj) {
+      if(obj[i] > 1) {
+        console.log(i + ':' + obj[i]);
+        dupArray.push(obj[i]);
+      }
+   }
+   console.log("有多少重复的:", dupArray.length);
 }
 
 const transfer = async () => {
@@ -119,7 +145,11 @@ const transfer = async () => {
       console.log("解析出来的数据有误,请检查后重试!");
       return;
     }
-    for(let item of parseData) {
+    const searchedAddress = [];
+    const notActiveAddressArray = [];
+    // const addressList = [];
+    for(let i = 0; i < parseData.length; i++) {
+      let item = parseData[i];
         let txData = {
           to: item["地址"]? item["地址"].trim() : "",
           token: item["币种"]? item["币种"].trim().toUpperCase() : "",
@@ -127,27 +157,49 @@ const transfer = async () => {
           memo: item["转账备注"] || "",
           // status: 0,
         };
+        //  addressList.push(txData.to);
         if (jtWallet.isValidAddress(txData.to) && !new BigNumber(txData.amount).isNaN() && new BigNumber(txData.amount).gt(0) && isValidCurrency(txData.token)) {
           if(txData.to === address) {
             console.log(`转入地址: ${txData.to} 和 转出地址: ${address} 是同一地址`);
             continue;
           }
-          const toBalance = await explorerInst.getBalances(txData.to, txData.to);
-           if(toBalance.code === "2004") {
-             console.log(`${txData.to} 未激活`);
-             continue;
-           }
+          const existToken = tokens.find((token) => token === txData.token);
+          const findAddress = searchedAddress.find((address) => address === txData.to);
+          const notActive = notActiveAddressArray.find((item) => item === txData.to);
+          if(notActive) {
+            continue;
+          }
+           if(!findAddress) {
+            const toBalance = await explorerInst.getBalances(txData.to, txData.to);
+            if(toBalance.code === "2004") {
+              console.log(`${txData.to} 未激活`);
+              notActiveAddressArray.push(txData.to);
+              continue;
+            }
            if(toBalance.result) {
+            searchedAddress.push(txData.to);
             txData.amount = new BigNumber(txData.amount).toString(10);
             list.push(txData);
-            tokens.push(txData.token);
+            if(!existToken) {
+              tokens.push(txData.token);
+            }
            }
+          } else {
+            txData.amount = new BigNumber(txData.amount).toString(10);
+            list.push(txData);
+            if(!existToken) {
+              tokens.push(txData.token);
+            }
+          }
+      } else {
+        console.log("不合法的数据:", txData);
       }
     }
   if(list.length === 0) {
       return;
   }
-  console.log("解析出来的合法数据:", list);
+  // judgeDupAmount(addressList);
+  console.log("解析出来的合法数据:", list, "共多少条:", list.length);
   const balanceRes = await explorerInst.getBalances(address, address);
   if (!balanceRes.result) {
     console.log("获取转出地址资产失败:", balanceRes.msg);
@@ -156,8 +208,14 @@ const transfer = async () => {
     }
     return;
   }
+  const isExistSwt = tokens.find((el) => el === "SWT");
   const data = balanceRes.data;
   const balance = {};
+  if(!isExistSwt) {
+    const swtc = data["SWTC"];
+    available = new BigNumber(swtc.value).minus(swtc.frozen);
+    balance["SWT"] = { available };
+  }
   for (const token of tokens) {
     let key;
     if (token.toUpperCase() === "SWT") {
