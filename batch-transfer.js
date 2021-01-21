@@ -26,9 +26,9 @@ program
   .parse(process.argv);
 
 
-// const delay = async (timer) => {
-//   return new Promise((resolve) => setTimeout(resolve, timer));
-// };
+const delay = async (timer) => {
+  return new Promise((resolve) => setTimeout(resolve, timer));
+};
 
 const isObject = (obj) => {
   return Object.prototype.toString.call(obj) === "[object Object]";
@@ -92,6 +92,7 @@ const transfer = async () => {
     if (!password) {
       password = readlineSync.question("Please Enter Password:", { hideEchoBack: true });
     }
+    console.time("start");
     const explorerInst = ExplorerFactory.init(config.explorerNodes);
     const list = [];
     const tokens = [];
@@ -276,15 +277,22 @@ const transfer = async () => {
     if(transferList.length === hashList.length) {
       console.log("转账全部完成");
     }
+    let successCount = 0;
     for(let hash of hashList) {
       while(true) {
         const res = await explorerInst.orderDetail(Date.now(), hash);
-        if(res.result && res.data.succ === "tesSUCCESS") {
+        if(res.result) {
+          if(res.data.succ === "tesSUCCESS") {
+           successCount++;
+          }
           break;
+        } else {
+          await delay(1000 *3);
         }
        }
      }
-   console.log("校验转账成功!");
+   console.log("转账通过查询hash成功多少条:", successCount);
+   console.timeEnd("start");
   } catch (error) {
     console.log("error:", error.message);
   }
