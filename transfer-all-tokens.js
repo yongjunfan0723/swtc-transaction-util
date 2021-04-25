@@ -49,7 +49,7 @@ const objectConvertToArr = (data) => {
   return arr;
 }
 
-const transfer = (address, secret, amount, to, token, timeout = 1000) => {
+const transfer = (address, secret, amount, to, token, timeout = 0) => {
   return new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
@@ -110,11 +110,12 @@ const transferTokens = async () => {
         }
         let hasFailed = false;
         let count = 0;
-        for (const balance of filterBalances) {
+        for (let i = 0; i < filterBalances.length; i++) {
+          const balance = filterBalances[i];
           try {
             const available = new BigNumber(balance.value).minus(balance.freezed);
             const amount = available.precision(16, 1).toString(10);
-            await transfer(address, secret, amount, to, balance.currency);
+            await transfer(address, secret, amount, to, balance.currency, i === 0 ? 0 : 500);
             console.log("转账成功:", balance.currency);
             count++;
           } catch (error) {
